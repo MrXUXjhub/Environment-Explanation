@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository contains the source code used to model and interpret experienced greenspace exposure (EGE) during bike-sharing travel using **XGBoost** and **Explainable Artificial Intelligence (XAI)** techniques.
+This repository contains the source code used to model and interpret experienced greenspace exposure during bike-sharing travel using **XGBoost** and **Explainable Artificial Intelligence (XAI)** techniques.
 
 The workflow includes:
 
@@ -80,7 +80,7 @@ https://data.cma.cn/
 
 ### Target Variable
 
-- Experienced Greenspace Exposure (EGE)
+- Experienced Greenspace Exposure
 
 ---
 
@@ -113,14 +113,6 @@ Required packages include:
 - shap
 - statsmodels
 - mlxtend
-
-Install the required packages using:
-
-```bash
-pip install -r requirements.txt
-```
-
----
 
 ## Methodology
 
@@ -187,12 +179,6 @@ Please organize the input datasets according to the directory structure expected
 ## Citation
 
 If you use this repository in your research, please cite the associated publication.
-
-```text
-Author(s). Year.
-Title of the manuscript.
-Journal of Transport Geography.
-```
 
 ---
 
