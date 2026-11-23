@@ -3,8 +3,8 @@
 Place the hourly modelling table at `data/GE.csv`, or pass its location to
 `prepare_data.py --data /path/to/GE.csv`.
 
-The observations are not included in this code update. `data/GE.csv`, trained
-models and generated results are ignored by Git. The original providers and
+The observations are supplied locally. `data/GE.csv`, trained
+models and generated results are ignored by Git. The data providers and
 access routes are listed in the repository README.
 
 Required columns:
@@ -17,9 +17,8 @@ Required columns:
 
 Each row represents one unique hour. Predictors and outcomes must be numeric and
 finite. `Hour of Day` uses integers 0–23. A `timestamp` must agree with this hour
-column. Weekday codes retain the source convention. Columns such as `ordercount`,
-`Trip Volume`, `Ln_Trip Volume` and `Travel Distance` may remain in the local CSV;
-the model matrix is constructed only from the explicit 13-predictor whitelist.
+column. Weekday codes retain the source convention. The model matrix uses the
+predictor columns listed above, in the order defined in `config.py`.
 
 Rows are sorted by time, duplicate hours are rejected and missing hours are not
 imputed. A target is eligible only when its current and preceding 23 input hours

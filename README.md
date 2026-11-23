@@ -1,212 +1,265 @@
-# Temporal Modelling and Explainable Analysis of Greenspace Exposure
+# XGBoost-Based Explainable Analysis of Greenspace Exposure During Bike-Sharing Travel
 
 [中文说明](README.zh-CN.md)
 
-Separate Python scripts implement OLS, Random Forest, CatBoost, LightGBM,
-XGBoost and LSTM, followed by SHAP and partial dependence analysis. The revised
-workflow excludes **trip volume and travel distance**, uses the same 13
-predictors and target hours for all six models, and evaluates later-period
-performance with training-only temporal validation.
+## Overview
 
-The original single-file analysis is preserved in [legacy/](legacy/).
+This repository contains the source code used to model and interpret experienced greenspace exposure during bike-sharing travel using **XGBoost** and **Explainable Artificial Intelligence (XAI)** techniques.
 
-## Models and data
+The workflow also includes OLS, Random Forest, CatBoost, LightGBM and LSTM for model comparison. Each model has a separate Python script and uses a common data preparation and temporal validation procedure.
 
-| Component | Specification |
-| --- | --- |
-| Models | OLS, RF, CatBoost, LightGBM, XGBoost, LSTM |
-| Time predictors | Day of Week, Hour of Day |
-| Air pollution | O3, PM2.5, PM10, SO2, NO2, CO |
-| Weather | Temperature, Wind Speed, Pressure, Humidity, Precipitation |
-| Outcomes, fitted separately | SGE, EGE, GiniStart, GiniEnd |
-| Excluded predictors | ordercount, Trip Volume, Ln_Trip Volume, Travel Distance |
+The workflow includes:
 
-Only the 13-column whitelist in [config.py](config.py) enters model inputs.
-Extra columns are not automatically selected or used as mobility substitutes.
-SGE/EGE are labelled origin/destination GE in exported figures; the Gini
-outcomes describe their corresponding spatial distributions.
+- Model training and hyperparameter selection
+- Model performance evaluation
+- SHAP feature importance analysis
+- One-dimensional SHAP dependence and partial dependence analysis
+- Two-dimensional Partial Dependence Plot (PDP) analysis
 
-Place the local hourly table at data/GE.csv. Required columns and timestamp
-handling are described in [data/README.md](data/README.md). Raw observations,
-model weights and generated results are not included in this code update and
-are excluded from Git. The code does not recreate the joined hourly table.
+The code accompanies the research presented in the associated journal manuscript.
 
-The original project lists these upstream sources: [Mobike/Biendata](https://www.biendata.xyz/),
-[ESA WorldCover](https://esa-worldcover.org/en), [CNEMC](https://www.cnemc.cn/)
-and [CMDC](https://data.cma.cn/).
+---
 
-## Repository structure
+## Study Objective
 
-~~~text
+This study investigates the relationships of temporal patterns, air pollution and weather conditions with experienced greenspace exposure (EGE) during bike-sharing travel.
+
+The proposed explainable machine learning framework aims to:
+
+- Predict greenspace exposure and its spatial distribution;
+- Quantify the contributions of temporal, environmental and meteorological variables;
+- Examine nonlinear relationships and joint model responses using SHAP and PDP analyses.
+
+---
+
+## Data Sources
+
+The analyses integrate several publicly available datasets.
+
+### Bike-Sharing Trip Data
+
+The bike-sharing trip data were retrieved from the Mobike competition dataset provided through the Biendata platform:
+
+https://www.biendata.xyz/
+
+### Greenspace Data
+
+Greenspace information was derived from the ESA WorldCover dataset:
+
+https://esa-worldcover.org/en
+
+### Air Pollution Data
+
+Air pollution observations were obtained from the China National Environmental Monitoring Centre (CNEMC):
+
+https://www.cnemc.cn/
+
+### Meteorological Data
+
+Meteorological variables were obtained from the China Meteorological Data Service Centre (CMDC):
+
+https://data.cma.cn/
+
+Prepare the joined hourly modelling table locally as `data/GE.csv`. Required columns and formatting are described in [data/README.md](data/README.md).
+
+---
+
+## Input Variables
+
+### Predictor Variables
+
+- Day of Week
+- Hour of Day
+- O3
+- PM2.5
+- PM10
+- SO2
+- NO2
+- CO
+- Temperature
+- Wind Speed
+- Pressure
+- Humidity
+- Precipitation
+
+### Target Variables
+
+The four outcomes are modelled separately:
+
+- `SGE`: Origin greenspace exposure
+- `EGE`: Destination greenspace exposure
+- `GiniStart`: Gini coefficient of origin greenspace exposure
+- `GiniEnd`: Gini coefficient of destination greenspace exposure
+
+The predictor names and order are defined in `config.py`.
+
+---
+
+## Repository Structure
+
+```text
 .
-├── train_ols.py / train_rf.py / train_catboost.py
-├── train_lightgbm.py / train_xgboost.py / train_lstm.py
-├── shap_analysis.py          # All 13 importances and SHAP summary plot
-├── shap_dependence.py        # SHAP dependence scatter plots
-├── pdp_1d.py                 # One-dimensional partial dependence
-├── pdp_2d.py                 # Nine pairs in a 3 × 3 layout
-├── prepare_data.py           # Shared modelling table and temporal protocol
-├── summarize_results.py      # Metrics recalculated from saved predictions
-├── plot_predictions.py       # Shared axis labels and one legend
-├── import_saved_results.py   # Import matching previous 13-predictor fits
-├── run_all.py / self_check.py
+├── data/
+│   └── README.md
+├── prepare_data.py
+├── train_ols.py
+├── train_rf.py
+├── train_catboost.py
+├── train_lightgbm.py
+├── train_xgboost.py
+├── train_lstm.py
+├── shap_analysis.py
+├── shap_dependence.py
+├── pdp_1d.py
+├── pdp_2d.py
+├── summarize_results.py
+├── plot_predictions.py
+├── import_saved_results.py
+├── run_all.py
+├── self_check.py
 ├── config.py / runtime.py / data_protocol.py
 ├── training_common.py / explanation_common.py / plot_utils.py
-├── data/README.md
-├── tests/ / figure_qa/
-├── requirements.txt / requirements_lstm.txt / requirements-test.txt
-├── 使用说明.txt
-└── legacy/                   # Unmodified original single-file code
-~~~
+├── tests/
+├── figure_qa/
+├── legacy/
+├── README.md
+├── README.zh-CN.md
+├── requirements.txt
+└── requirements_lstm.txt
+```
 
-Keep the directory together: each model has a separate entry point and shares
-the protocol and utility modules.
+Keep the shared modules and directory structure together. Models, predictions, metrics and figures are saved under `results/` when the scripts run.
 
-## Installation
+---
 
-Use Python 3.12 and a separate virtual environment. From the repository root:
+## Software Requirements
 
-~~~bash
+The code uses **Python 3.12**.
+
+Required packages include:
+
+- numpy, pandas and scipy
+- matplotlib and Pillow
+- scikit-learn and joblib
+- xgboost, lightgbm and catboost
+- shap
+- PyMuPDF
+- tensorflow and keras for LSTM
+
+Install the complete environment:
+
+```bash
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements_lstm.txt
-~~~
+```
 
-On Windows, activate with .venv\Scripts\activate instead. For table models and
-explanations without LSTM, install requirements.txt. Pinned versions are
-recorded in [environment_versions.json](environment_versions.json).
+On Windows, activate the environment with `.venv\Scripts\activate`. For table models and their explanations, install `requirements.txt`. Package versions are recorded in `environment_versions.json`.
 
-## Running the revised workflow
+---
 
-Check the code and temporal protocol without training real estimators:
+## Methodology
 
-~~~bash
-python self_check.py
-~~~
+### 1. Model Training
 
-These checks use generated fixtures, so they run without the author CSV.
-An additional original-data regression check runs only when the exact author
-CSV is available. GitHub Actions runs these data-free checks using
-requirements-test.txt; it does not train the six models.
+- Prepare a common hourly modelling table.
+- Reserve the final 20% of chronological records as the test period.
+- Use five-fold expanding-window cross-validation within the training period.
+- Select candidate configurations by mean validation MSE.
+- Fit the selected configuration on the training targets and evaluate the common test targets.
 
-Prepare the local table, train XGBoost and explain destination GE:
+All six models use the same eligible target hours. Each target requires 24 continuous input hours. LSTM uses the current and preceding 23 hours to estimate the current target, with scaling fitted only on training information. This evaluates contemporaneous regression in a later period. OLS and LSTM use one configuration each; the other models evaluate their specified candidate grids.
 
-~~~bash
+### 2. Model Evaluation
+
+Model performance is evaluated using:
+
+- Mean Absolute Error (MAE)
+- Root Mean Squared Error (RMSE)
+- Mean Squared Error (MSE)
+- Coefficient of Determination (R²)
+
+Metrics are recalculated from saved predictions. Actual-versus-predicted plots compare the six models with shared axis labels and one legend.
+
+### 3. SHAP Analysis
+
+SHAP is used to:
+
+- Calculate feature importance
+- Interpret feature contributions
+- Explore nonlinear model responses
+- Generate SHAP summary and dependence plots
+
+Explanations default to XGBoost and use training-period observations. The scripts also support OLS and the other tree models. SHAP settings and additivity checks are saved with the outputs.
+
+### 4. One-Dimensional SHAP Dependence Analysis
+
+SHAP dependence plots show how feature values relate to their model attributions. Separate one-dimensional PDPs show average model predictions across a feature grid. The six highest-ranked variables are displayed by default; `--top-n 13` displays all predictors across pages.
+
+### 5. Two-Dimensional Partial Dependence Analysis
+
+Two-dimensional PDPs examine joint model responses to pairs of predictors. The three leading SHAP-ranked variables are each paired with the next three variables in the ranking, producing nine panels in a 3 × 3 layout.
+
+Predictions are averaged over all training-background rows at each grid point. The panels share a numerical colour scale based on their prediction range. Figures are exported as 600 dpi PNG and editable-text PDF/SVG.
+
+SHAP and PDP describe fitted-model behaviour; they do not by themselves establish causal effects or statistically significant interactions.
+
+---
+
+## Running the Code
+
+Place the local modelling table at `data/GE.csv`, then run the complete workflow:
+
+```bash
+python run_all.py --stage all
+```
+
+The script will:
+
+1. Prepare the modelling table and temporal splits.
+2. Train and evaluate all six models for the four outcomes.
+3. Summarize prediction performance.
+4. Generate XGBoost SHAP feature importance and dependence plots.
+5. Generate one- and two-dimensional PDPs.
+6. Export actual-versus-predicted comparison plots.
+
+To train and interpret XGBoost for EGE separately:
+
+```bash
 python prepare_data.py
 python train_xgboost.py --targets EGE
 python shap_analysis.py --targets EGE
 python shap_dependence.py --targets EGE
 python pdp_1d.py --targets EGE
 python pdp_2d.py --targets EGE
-~~~
+```
 
-Training scripts default to fitting all four outcomes separately. Run a
-different train_*.py file to change the model. For the complete workflow:
+Other models are run through their corresponding `train_*.py` files. Use `--model` to choose a table model for explanation and `--results` to specify an output directory. Run `--help` on an entry point for its options.
 
-~~~bash
-python run_all.py --stage all
-~~~
+---
 
-This command **trains models**, then summarizes metrics and generates
-XGBoost explanations and the comparison figure. Individual stages are
-prepare, check, fit, summary, explain and plots. The check stage needs the
-local CSV or a prepared protocol, but does not fit real estimators.
+## Reproducibility
 
-Custom paths and partial runs:
+The repository provides the workflow for model fitting, evaluation and interpretation, subject to access to the prepared hourly data from the corresponding sources.
 
-~~~bash
-python prepare_data.py --data /path/to/GE.csv --results my_results
-python train_rf.py --results my_results --targets EGE
-python shap_analysis.py --results my_results --targets EGE --model RF
-~~~
+Please organize the local input table according to [data/README.md](data/README.md). Training saves fitted models under `results/models/`. The outputs record data fingerprints, temporal splits, model settings and row-level predictions.
 
-Use the same --results directory for dependent commands. Each entry point
-provides --help. For the full comparison, first fit all six models and four
-outcomes, then run summarize_results.py and plot_predictions.py.
+Run the protocol and calculation checks without training real models:
 
-## Temporal validation
+```bash
+python self_check.py
+```
 
-1. Sort unique hourly records. Reject duplicate hours and non-finite modelling
-   values; do not impute across the complete dataset.
-2. Reserve the final 20% of original records as the reference test period.
-3. Require continuous current-plus-previous-23-hour inputs at each target time.
-   Apply this common eligibility rule to all six models.
-4. Within training targets, use five expanding-window splits
-   (TimeSeriesSplit, gap=0). Fit on the past and validate on the next block.
-   Select table-model candidates by mean validation MSE, never test scores.
-5. Refit the selected configuration on all training targets and evaluate the
-   common later-period holdout. Recalculate MAE, RMSE, MSE and R² from saved
-   predictions.
+These checks use generated test data and also run through GitHub Actions. Matching saved author-model results can be imported with `import_saved_results.py`. Detailed commands are available in [使用说明.txt](使用说明.txt).
 
-For the author's 336-row table, the raw cut is 268/68 records; after window
-filtering, all models share **222 training targets and 68 test targets**.
-Fold training sizes are 37, 74, 111, 148 and 185, with 37 validation targets
-each. Missing hours mean equal counts do not imply equal calendar durations.
-These counts are dataset-specific. This reference holdout was previously used
-for the 15-predictor comparison; it is not a new external validation dataset.
+---
 
-LSTM uses X[t-23:t+1] to estimate y[t]. Current-hour environmental predictors
-are observed, so this is **later-period contemporaneous regression**, not a
-24-hour-ahead forecast. Scalers fit only each fold's training information.
-LSTM uses one fixed configuration and 50 epochs; the final test period is not
-used for early stopping. OLS also has one candidate.
+## Citation
 
-Default XGBoost uses the original three-candidate grid. The optional
---extended-search produces a separately named XGBoost_extended model; it
-does not silently replace the main model. Negative R² values are retained,
-and no model is forced to rank first.
+If you use this repository in your research, please cite the associated publication.
 
-## SHAP, PDP and figures
+---
 
-- Explanations default to XGBoost and also support OLS, RF, CatBoost and
-  LightGBM. Table explainers are not applied directly to the LSTM tensor.
-- Every training target is explained. XGBoost/LightGBM use interventional
-  TreeSHAP with all training targets as background; OLS uses LinearExplainer;
-  RF/CatBoost use path-dependent TreeSHAP with training-tree cover counts.
-  Metadata records these different assumptions. An independent additivity
-  check compares SHAP sums plus the baseline with native predictions.
-- Summary plots show all 13 variables. Dependence plots and 1D PDP default
-  to the top six; --top-n 13 shows all variables across pages, and --features
-  selects explicit variables.
-- 2D PDP selects the first three training-SHAP-ranked variables. Each is
-  paired with the three immediately following it: ranks (1,2–4), (2,3–5)
-  and (3,4–6), giving nine distinct pairs.
-- PDP averages predictions over **all training-background rows** after
-  replacing the selected input(s). Continuous grids default to 31 points
-  across training 5th–95th percentiles, or observed values when fewer exist.
-  Weekday/hour grids use observed integer codes. Nine surfaces share a
-  numerical colour scale derived from their actual prediction range.
-- Figures export 600 dpi PNG and editable-text PDF/SVG, with alignment,
-  font-size and collision checks. The prediction comparison has shared
-  axis labels and one legend.
+## License
 
-SHAP dependence shows attribution; PDP shows average model predictions.
-Neither establishes causation or statistically significant interaction.
-Correlated inputs can produce poorly supported PDP combinations. The
-original iid bootstrap/LOWESS confidence bands are not carried forward.
-
-## Outputs and saved fits
-
-Outputs live under results/: protocol.json, models/, training/model/target/,
-explanations/model/target/, summary/ and figures/. Source CSVs are not
-overwritten. Data/model hashes guard against mixing incompatible results.
-
-To reuse a matching **previously fitted 13-predictor** author analysis:
-
-~~~bash
-python prepare_data.py
-python import_saved_results.py --source-results /path/to/paper5_no_mobility
-python shap_analysis.py --targets EGE
-python pdp_2d.py --targets EGE
-~~~
-
-The importer expects the previous author results format and checks data,
-features, temporal indices and saved table-model predictions. It does not
-convert old 15-predictor fits into 13-predictor fits.
-
-## Validation scope
-
-This update supplies revised code. It does not claim a new six-model training
-run or new manuscript performance results. See [validation_report.json](validation_report.json)
-for the checks actually run. Please cite the associated publication when
-using this research workflow.
+This repository is provided for academic research and educational purposes. Please cite the associated publication when using this code.
