@@ -6,7 +6,7 @@
 
 This repository contains the source code used to model and interpret experienced greenspace exposure during bike-sharing travel using **XGBoost** and **Explainable Artificial Intelligence (XAI)** techniques.
 
-The workflow also includes OLS, Random Forest, CatBoost, LightGBM and LSTM for model comparison. Each model has a separate Python script and uses a common data preparation and temporal validation procedure.
+The workflow also includes OLS, Random Forest, CatBoost, LightGBM and LSTM for model comparison. Each model has a standalone Python file. SHAP and PDP are combined in one file. Data paths, target variables and model parameters are set at the top of each script.
 
 The workflow includes:
 
@@ -91,7 +91,7 @@ The four outcomes are modelled separately:
 - `GiniStart`: Gini coefficient of origin greenspace exposure
 - `GiniEnd`: Gini coefficient of destination greenspace exposure
 
-The predictor names and order are defined in `config.py`.
+The predictor names and order are listed in `FEATURES` at the top of each script.
 
 ---
 
@@ -99,36 +99,21 @@ The predictor names and order are defined in `config.py`.
 
 ```text
 .
+├── OLS.py
+├── RF.py
+├── CatBoost.py
+├── LightGBM.py
+├── XGBoost.py
+├── LSTM.py
+├── SHAP_PDP.py
 ├── data/
 │   └── README.md
-├── prepare_data.py
-├── train_ols.py
-├── train_rf.py
-├── train_catboost.py
-├── train_lightgbm.py
-├── train_xgboost.py
-├── train_lstm.py
-├── shap_analysis.py
-├── shap_dependence.py
-├── pdp_1d.py
-├── pdp_2d.py
-├── summarize_results.py
-├── plot_predictions.py
-├── import_saved_results.py
-├── run_all.py
-├── self_check.py
-├── config.py / runtime.py / data_protocol.py
-├── training_common.py / explanation_common.py / plot_utils.py
-├── tests/
-├── figure_qa/
-├── legacy/
 ├── README.md
 ├── README.zh-CN.md
-├── requirements.txt
-└── requirements_lstm.txt
+└── requirements.txt
 ```
 
-Keep the shared modules and directory structure together. Models, predictions, metrics and figures are saved under `results/` when the scripts run.
+Place the local hourly table at `data/GE.csv`. Each Python file runs independently; it does not import another script from this repository. Model outputs are saved under `results/<model>/`, and explanations under `results/SHAP_PDP/<model>/`.
 
 ---
 
@@ -143,7 +128,6 @@ Required packages include:
 - scikit-learn and joblib
 - xgboost, lightgbm and catboost
 - shap
-- PyMuPDF
 - tensorflow and keras for LSTM
 
 Install the complete environment:
@@ -151,10 +135,10 @@ Install the complete environment:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements_lstm.txt
+python -m pip install -r requirements.txt
 ```
 
-On Windows, activate the environment with `.venv\Scripts\activate`. For table models and their explanations, install `requirements.txt`. Package versions are recorded in `environment_versions.json`.
+On Windows, activate the environment with `.venv\Scripts\activate`. Package versions are pinned in `requirements.txt`. TensorFlow and Keras are needed for LSTM.
 
 ---
 
@@ -194,7 +178,7 @@ Explanations default to XGBoost and use training-period observations. The script
 
 ### 4. One-Dimensional SHAP Dependence Analysis
 
-SHAP dependence plots show how feature values relate to their model attributions. Separate one-dimensional PDPs show average model predictions across a feature grid. The six highest-ranked variables are displayed by default; `--top-n 13` displays all predictors across pages.
+SHAP dependence plots show how feature values relate to their model attributions. Separate one-dimensional PDPs show average model predictions across a feature grid. The six highest-ranked variables are displayed by default; set `TOP_N = 13` in `SHAP_PDP.py` to display all predictors across pages.
 
 ### 5. Two-Dimensional Partial Dependence Analysis
 
@@ -208,33 +192,28 @@ SHAP and PDP describe fitted-model behaviour; they do not by themselves establis
 
 ## Running the Code
 
-Place the local modelling table at `data/GE.csv`, then run the complete workflow:
+Place the local modelling table at `data/GE.csv`. Run the model you need directly:
 
 ```bash
-python run_all.py --stage all
+python OLS.py
+python RF.py
+python CatBoost.py
+python LightGBM.py
+python XGBoost.py
+python LSTM.py
 ```
 
-The script will:
+Each model script prepares its data, performs temporal validation, fits the model and exports metrics, predictions and an actual-versus-predicted figure. Edit `DATA_FILE`, `TARGETS`, `OUTPUT_DIR` and the model settings at the top of the file as needed.
 
-1. Prepare the modelling table and temporal splits.
-2. Train and evaluate all six models for the four outcomes.
-3. Summarize prediction performance.
-4. Generate XGBoost SHAP feature importance and dependence plots.
-5. Generate one- and two-dimensional PDPs.
-6. Export actual-versus-predicted comparison plots.
-
-To train and interpret XGBoost for EGE separately:
+To generate SHAP and PDP analyses for XGBoost, first run `XGBoost.py`, then:
 
 ```bash
-python prepare_data.py
-python train_xgboost.py --targets EGE
-python shap_analysis.py --targets EGE
-python shap_dependence.py --targets EGE
-python pdp_1d.py --targets EGE
-python pdp_2d.py --targets EGE
+python SHAP_PDP.py
 ```
 
-Other models are run through their corresponding `train_*.py` files. Use `--model` to choose a table model for explanation and `--results` to specify an output directory. Run `--help` on an entry point for its options.
+This file loads the saved model and its training background, then generates the SHAP summary, SHAP dependence plots, one-dimensional PDPs and the 3 × 3 two-dimensional PDP figure. It does not refit the model.
+
+Set `MODEL_NAME` in `SHAP_PDP.py` to select a fitted table model, and edit `TARGETS`, `TOP_N` or `GRID_POINTS` for the desired outputs. The explanation file supports OLS, RF, CatBoost, LightGBM and XGBoost.
 
 ---
 
@@ -242,15 +221,15 @@ Other models are run through their corresponding `train_*.py` files. Use `--mode
 
 The repository provides the workflow for model fitting, evaluation and interpretation, subject to access to the prepared hourly data from the corresponding sources.
 
-Please organize the local input table according to [data/README.md](data/README.md). Training saves fitted models under `results/models/`. The outputs record data fingerprints, temporal splits, model settings and row-level predictions.
+Input formatting is described in [data/README.md](data/README.md). All model scripts use the same predictor order and chronological splitting rules. Saved outputs include metrics, row-level predictions, cross-validation results and fitted models. Table-model files also contain the training background used for SHAP and PDP.
 
-Run the protocol and calculation checks without training real models:
+To check the input and eligible sample counts without fitting a model:
 
 ```bash
-python self_check.py
+python XGBoost.py --check-only
 ```
 
-These checks use generated test data and also run through GitHub Actions. Matching saved author-model results can be imported with `import_saved_results.py`. Detailed commands are available in [使用说明.txt](使用说明.txt).
+GitHub Actions checks the syntax of the seven Python files.
 
 ---
 

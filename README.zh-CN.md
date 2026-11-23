@@ -4,200 +4,133 @@
 
 ## 项目概述
 
-本仓库提供使用 **XGBoost** 和 **可解释人工智能（XAI）** 方法建模与解释共享单车出行绿地暴露的代码。
-
-同时提供 OLS、随机森林、CatBoost、LightGBM 和 LSTM 作为比较模型。各模型使用独立的 Python 文件，并共用数据准备与时间验证流程。
-
-分析流程包括：
-
-- 模型训练与参数选择
-- 模型预测性能评价
-- SHAP 特征重要性分析
-- 一维 SHAP 依赖与部分依赖分析
-- 二维部分依赖图（PDP）分析
-
-代码配套相关期刊论文中的研究。
-
----
+本仓库提供共享单车出行绿地暴露的模型训练、精度评价及 SHAP/PDP 解释代码。
+六种模型各有一个独立文件，SHAP 和 PDP 合并在一个文件中。
+每个文件均可直接运行，路径、目标和参数集中在文件开头。
 
 ## 研究目标
 
-研究共享单车出行绿地暴露与时间特征、空气污染和气象条件之间的关系，具体包括：
-
 - 预测绿地暴露及其空间分布；
-- 量化时间、环境和气象变量对模型预测的贡献；
-- 通过 SHAP 和 PDP 分析非线性关系及变量组合下的模型响应。
-
----
+- 分析时间、空气污染和气象变量对模型预测的贡献；
+- 通过 SHAP 和 PDP 展示非线性关系与变量组合下的模型响应。
 
 ## 数据来源
 
-### 共享单车出行数据
+出行数据来自 [Mobike/Biendata](https://www.biendata.xyz/)，绿地信息来自
+[ESA WorldCover](https://esa-worldcover.org/en)，空气污染观测来自
+[中国环境监测总站](https://www.cnemc.cn/)，气象数据来自
+[中国气象数据服务中心](https://data.cma.cn/)。
 
-出行数据来自 Biendata 平台提供的 Mobike 竞赛数据集：
-
-https://www.biendata.xyz/
-
-### 绿地数据
-
-绿地信息来自 ESA WorldCover 数据集：
-
-https://esa-worldcover.org/en
-
-### 空气污染数据
-
-空气污染观测来自中国环境监测总站（CNEMC）：
-
-https://www.cnemc.cn/
-
-### 气象数据
-
-气象变量来自中国气象数据服务中心（CMDC）：
-
-https://data.cma.cn/
-
-将匹配后的小时建模表存放在本地 `data/GE.csv`，具体列名和格式见 [数据说明](data/README.md)。
-
----
+将整理匹配的小时表存放在本地 `data/GE.csv`，格式见 [数据说明](data/README.md)。
 
 ## 输入变量
 
-### 预测变量
+预测变量：星期、小时、O3、PM2.5、PM10、SO2、NO2、CO、温度、风速、气压、湿度、降水。
+对应的英文列名和顺序在每个脚本的 `FEATURES` 中列出。
 
-- 星期（Day of Week）
-- 小时（Hour of Day）
-- O3
-- PM2.5
-- PM10
-- SO2
-- NO2
-- CO
-- 温度（Temperature）
-- 风速（Wind Speed）
-- 气压（Pressure）
-- 湿度（Humidity）
-- 降水（Precipitation）
-
-### 目标变量
-
-以下四个目标分别建模：
-
-- `SGE`：起点绿地暴露
-- `EGE`：终点绿地暴露
-- `GiniStart`：起点绿地暴露的基尼系数
-- `GiniEnd`：终点绿地暴露的基尼系数
-
-预测变量的列名和顺序统一在 `config.py` 中定义。
-
----
+四个目标分别训练：`SGE`、`EGE`、`GiniStart`、`GiniEnd`，对应起点与终点绿地暴露及其基尼系数。
 
 ## 仓库结构
 
-| 用途 | 文件 |
+| 文件 | 用途 |
 | --- | --- |
-| 数据准备 | `prepare_data.py` |
-| 六种模型 | `train_ols.py`、`train_rf.py`、`train_catboost.py`、`train_lightgbm.py`、`train_xgboost.py`、`train_lstm.py` |
-| SHAP 分析 | `shap_analysis.py`、`shap_dependence.py` |
-| PDP 分析 | `pdp_1d.py`、`pdp_2d.py` |
-| 精度汇总与拟合图 | `summarize_results.py`、`plot_predictions.py` |
-| 已有模型结果导入 | `import_saved_results.py` |
-| 完整流程与检查 | `run_all.py`、`self_check.py` |
-| 环境依赖 | `requirements.txt`、`requirements_lstm.txt` |
+| `OLS.py` | 普通最小二乘回归 |
+| `RF.py` | 随机森林 |
+| `CatBoost.py` | CatBoost |
+| `LightGBM.py` | LightGBM |
+| `XGBoost.py` | XGBoost |
+| `LSTM.py` | LSTM |
+| `SHAP_PDP.py` | SHAP 总结图、依赖图、一维与二维 PDP |
 
-请保留共用模块和目录结构。运行生成的模型、预测、指标和图片保存在 `results/` 下。
-
----
+七个代码文件均不依赖仓库中的其他 Python 文件。
+模型结果保存在 `results/模型名/`，解释结果保存在 `results/SHAP_PDP/模型名/`。
 
 ## 软件环境
 
-建议使用 **Python 3.12**。主要依赖包括 numpy、pandas、scipy、matplotlib、Pillow、scikit-learn、joblib、xgboost、lightgbm、catboost、shap 和 PyMuPDF；LSTM 使用 tensorflow 与 keras。
-
-安装完整环境：
+建议 Python 3.12，在仓库目录执行：
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements_lstm.txt
+python -m pip install -r requirements.txt
 ```
 
-Windows 使用 `.venv\Scripts\activate` 激活。运行表格模型及其解释脚本可安装 `requirements.txt`，版本记录见 `environment_versions.json`。
-
----
+Windows 使用 `.venv\Scripts\activate` 激活环境。
 
 ## 研究方法
 
 ### 1. 模型训练
 
-按时间排序后，将最后20%的原始记录作为测试时段，在训练期内进行五折扩展窗口交叉验证。候选配置按平均验证 MSE 选择，确定配置后用训练目标重新拟合，再评价共同测试目标。
+按时间排序，将最后20%的原始记录作为测试时段，在训练期内进行五折扩展窗口验证。
+候选配置按平均验证 MSE 选择，确定配置后拟合训练目标，再评价共同测试目标。
 
-六种模型使用相同的有效目标时刻，每个目标要求连续24小时的输入。LSTM 用当小时及此前23小时输入估计当小时目标，缩放器仅拟合训练信息，评价的是后续时段的同小时回归。OLS 和 LSTM 各使用一个配置，其他模型评价各自指定的候选参数。
+六模型使用相同的有效目标时刻，每个目标需要连续24小时输入。
+LSTM 使用当前及此前23小时输入估计当前目标，属于后续时段的同小时回归。
+缩放器仅拟合训练信息，最终测试时段不用于早停。OLS 和 LSTM 各使用一个配置。
 
 ### 2. 模型评价
 
-评价指标包括 MAE、RMSE、MSE 和 R²，均从保存的预测值重新计算。实际值—预测值图使用共享坐标名称和一个图例，比较六种模型的拟合关系。
+每个模型导出训练与测试的 MAE、RMSE、MSE、R²、逐行预测和交叉验证结果，
+并生成包含四个目标的实际值—预测值图，采用共享坐标名称和一个图例。
 
 ### 3. SHAP 分析
 
-使用 SHAP 计算特征重要性、解释变量贡献，并生成总结图和依赖图。默认解释 XGBoost，也支持 OLS 和其他树模型。解释采用训练期观测，方法设置和贡献加和校验保存在结果中。
+`SHAP_PDP.py` 读取已保存的表格模型和训练背景，计算全部变量的 SHAP 贡献与重要性，
+生成总结图，并校验 SHAP 贡献之和与模型预测一致。
 
-### 4. 一维 SHAP 依赖分析
+### 4. 一维依赖分析
 
-SHAP 依赖图展示特征值与模型归因的关系。独立的一维 PDP 脚本展示特征网格上的平均预测。默认展示重要性前6个变量，`--top-n 13` 可分页展示全部变量。
+同一文件生成 SHAP 依赖散点图和真正的一维 PDP。默认显示重要性前6个变量，
+修改 `TOP_N = 13` 可分页展示全部变量。
 
 ### 5. 二维部分依赖分析
 
-按 SHAP 重要性排序，将前三个变量分别与紧随其后的三个变量配对，形成3×3、共9个面板。
+按训练 SHAP 排序，前三个变量分别与紧随其后的三个变量配对，形成3×3共9个子图。
+每个网格点在全部训练背景行上平均模型预测，子图共用真实预测范围确定的色标。
+图片导出600 dpi PNG、可编辑文字 PDF 和 SVG。
 
-每个网格点在全部训练背景行上计算平均预测，所有面板共用真实预测范围确定的数值色标。图片输出600 dpi PNG 和可编辑文字 PDF/SVG。
-
-SHAP 与 PDP 描述已拟合模型的行为，本身不能直接证明因果效应或交互的统计显著性。
-
----
+SHAP 和 PDP 描述模型行为，本身不构成因果效应或交互显著性的证据。
 
 ## 运行代码
 
-将本地建模表放在 `data/GE.csv`，运行完整流程：
+选择所需模型直接运行：
 
 ```bash
-python run_all.py --stage all
+python OLS.py
+python RF.py
+python CatBoost.py
+python LightGBM.py
+python XGBoost.py
+python LSTM.py
 ```
 
-该流程准备共同时间划分，训练六种模型的四个目标，汇总精度，并生成 XGBoost 的 SHAP、PDP 和六模型实际值—预测值比较图。
+修改每个文件开头的 `DATA_FILE`、`TARGETS`、`OUTPUT_DIR` 和模型参数即可调整运行内容。
 
-单独训练和解释 EGE 的 XGBoost 模型：
+先运行 `XGBoost.py` 保存模型，再运行合并的解释文件：
 
 ```bash
-python prepare_data.py
-python train_xgboost.py --targets EGE
-python shap_analysis.py --targets EGE
-python shap_dependence.py --targets EGE
-python pdp_1d.py --targets EGE
-python pdp_2d.py --targets EGE
+python SHAP_PDP.py
 ```
 
-其他模型运行相应的 `train_*.py` 文件。解释脚本通过 `--model` 选择表格模型，`--results` 指定结果目录。具体选项可通过各入口的 `--help` 查看。
-
----
+解释过程不会重新训练模型。修改 `MODEL_NAME` 可选择 OLS、RF、CatBoost、LightGBM 或 XGBoost。
+`TARGETS`、`TOP_N`、`GRID_POINTS` 分别控制目标、展示变量数量和 PDP 网格数。
 
 ## 可重复性
 
-输入数据格式见 [数据说明](data/README.md)。建模表由本地提供，训练生成的模型保存在 `results/models/`。输出记录数据指纹、时间划分、模型配置和逐行预测，便于核对与复现。
+各模型文件采用相同的变量顺序和时间划分规则，结果保存模型、指标、逐行预测和交叉验证分数。
+表格模型文件同时保存用于解释的训练背景。
 
-无需训练真实模型的检查：
+仅检查输入和有效样本数、不训练模型：
 
 ```bash
-python self_check.py
+python XGBoost.py --check-only
 ```
 
-检查使用生成的测试数据，并通过 GitHub Actions 运行。匹配的已有作者模型结果可用 `import_saved_results.py` 导入。更多命令见 [完整使用说明](使用说明.txt)。
-
----
+GitHub Actions 检查七个文件的 Python 语法。
 
 ## 引用
 
 在研究中使用本仓库时，请引用相关论文。
-
----
 
 ## 使用说明
 

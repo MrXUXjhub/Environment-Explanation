@@ -1,11 +1,6 @@
-# Local input data
+# Hourly input table
 
-Place the hourly modelling table at `data/GE.csv`, or pass its location to
-`prepare_data.py --data /path/to/GE.csv`.
-
-The observations are supplied locally. `data/GE.csv`, trained
-models and generated results are ignored by Git. The data providers and
-access routes are listed in the repository README.
+Place your local modelling table at `data/GE.csv`, or edit `DATA_FILE` in a model script.
 
 Required columns:
 
@@ -13,13 +8,8 @@ Required columns:
 | --- | --- |
 | Time | `timestamp`, or `date` together with `Hour of Day` |
 | Predictors | `Day of Week`, `Hour of Day`, `O3`, `PM2.5`, `PM10`, `SO2`, `NO2`, `CO`, `Temperature`, `Wind Speed`, `Pressure`, `Humidity`, `Precipitation` |
-| Outcomes | `SGE`, `EGE`, `GiniStart`, `GiniEnd` |
+| Targets | `SGE`, `EGE`, `GiniStart`, `GiniEnd` |
 
-Each row represents one unique hour. Predictors and outcomes must be numeric and
-finite. `Hour of Day` uses integers 0–23. A `timestamp` must agree with this hour
-column. Weekday codes retain the source convention. The model matrix uses the
-predictor columns listed above, in the order defined in `config.py`.
+Each row represents one unique hour. Predictors and targets must be numeric and finite. `Hour of Day` uses integers 0–23 and must agree with the timestamp. Weekday codes retain the source convention.
 
-`self_check.py` works without this file: its main checks use clearly labelled,
-generated test fixtures. An additional author-data regression check runs only
-when the exact local author CSV is available.
+Edit `TARGETS` at the top of a script if modelling a subset of outcomes. Model outputs are written under `results/`.

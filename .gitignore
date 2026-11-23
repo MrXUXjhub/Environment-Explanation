@@ -1,24 +1,13 @@
-# Local data and generated analysis artifacts
 data/*
 !data/README.md
 results/
-my_results/
+*.csv
 *.joblib
 *.keras
-*.csv
-protocol.json
-catboost_info/
-
-# Environments, caches, local credentials and editor files
-.venv*/
-venv/
+.cache/
 __pycache__/
 *.py[cod]
-.cache/
-.pytest_cache/
-.qa/
+.venv*/
 .env
 .env.*
 .DS_Store
-.idea/
-.vscode/
