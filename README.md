@@ -119,7 +119,7 @@ Required packages include:
 - Data preprocessing
 - Train/test split
 - Hyperparameter tuning using GridSearchCV
-- Five-fold cross-validation
+- Time series cross-validation
 
 ### 2. Model Evaluation
 
