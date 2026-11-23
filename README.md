@@ -6,7 +6,7 @@ This repository contains the source code used to model and interpret experienced
 
 The workflow includes:
 
-- XGBoost model training and hyperparameter optimization
+- Model training and hyperparameter optimization
 - Model performance evaluation
 - SHAP feature importance analysis
 - One-dimensional SHAP dependence analysis with LOWESS smoothing
@@ -114,7 +114,7 @@ Required packages include:
 
 ## Methodology
 
-### 1. XGBoost Model Training
+### 1. Model Training
 
 - Data preprocessing
 - Train/test split
