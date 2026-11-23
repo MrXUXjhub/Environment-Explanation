@@ -75,8 +75,6 @@ https://data.cma.cn/
 - Pressure
 - Humidity
 - Precipitation
-- Trip Volume
-- Travel Distance
 
 ### Target Variable
 
