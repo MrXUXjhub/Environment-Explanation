@@ -20,17 +20,6 @@ finite. `Hour of Day` uses integers 0–23. A `timestamp` must agree with this h
 column. Weekday codes retain the source convention. The model matrix uses the
 predictor columns listed above, in the order defined in `config.py`.
 
-Rows are sorted by time, duplicate hours are rejected and missing hours are not
-imputed. A target is eligible only when its current and preceding 23 input hours
-are continuous. This common eligibility rule also applies to the table models
-so that all six models are compared at identical target times.
-
-For the exact author-confirmed CSV fingerprint in `config.py`, a 2023 date-entry
-error is corrected to 2017 in derived timestamps only. Other files retain their
-years unless a justified `--year` is explicitly supplied. The source CSV is
-never overwritten. Retain original measurement units; the scripts do not infer
-or convert units.
-
 `self_check.py` works without this file: its main checks use clearly labelled,
 generated test fixtures. An additional author-data regression check runs only
 when the exact local author CSV is available.
