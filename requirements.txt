@@ -1,0 +1,16 @@
+# Python 3.12; versions matched to the verified analysis environment.
+numpy==1.26.4
+pandas==2.2.3
+scipy==1.13.1
+scikit-learn==1.5.2
+matplotlib==3.9.4
+Pillow==13.0.0
+joblib==1.6.0
+shap==0.46.0
+xgboost==2.1.4
+lightgbm==4.6.0
+catboost==1.2.8
+PyMuPDF==1.24.14
+numba==0.61.2
+llvmlite==0.44.0
+cloudpickle==3.1.3
