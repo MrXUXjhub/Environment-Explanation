@@ -186,8 +186,6 @@ Two-dimensional PDPs examine joint model responses to pairs of predictors. The t
 
 Predictions are averaged over all training-background rows at each grid point. The panels share a numerical colour scale based on their prediction range. Figures are exported as 600 dpi PNG and editable-text PDF/SVG.
 
-SHAP and PDP describe fitted-model behaviour; they do not by themselves establish causal effects or statistically significant interactions.
-
 ---
 
 ## Running the Code
