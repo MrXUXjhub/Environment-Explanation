@@ -1,10 +1,10 @@
-# XGBoost-Based Explainable Analysis of Greenspace Exposure During Bike-Sharing Travel
+# XGBoost-Based Explainable Analysis of Greenspace Exposure in Bike-Sharing Travel
 
 [中文说明](README.zh-CN.md)
 
 ## Overview
 
-This repository contains the source code used to model and interpret experienced greenspace exposure during bike-sharing travel using **XGBoost** and **Explainable Artificial Intelligence (XAI)** techniques.
+This repository contains the source code used to model and interpret experienced greenspace exposure in bike-sharing travel using **XGBoost** and **Explainable Artificial Intelligence (XAI)** techniques.
 
 The workflow also includes OLS, Random Forest, CatBoost, LightGBM and LSTM for model comparison. Each model has a standalone Python file. SHAP and PDP are combined in one file. Data paths, target variables and model parameters are set at the top of each script.
 
